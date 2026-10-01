@@ -15,20 +15,6 @@
       "formats": ["mp4", "mkv", "m3u8"],
       "logo": "https://i.postimg.cc/KzjPtYWY/imdb.png",
       "contentLanguage": ["en", "hi"]
-    },
-    {
-      "id": "vidstuck",
-      "name": "VidStuck",
-      "description": "Direct M3U8 Streaming from vidstuck.xyz embed",
-      "version": "1.0.0",
-      "author": "Your Name",
-      "supportedTypes": ["movie", "tv"],
-      "filename": "providers/vidstuck.js",
-      "enabled": true,
-      "hasSettings": false,
-      "formats": ["m3u8"],
-      "logo": "https://vidstuck.xyz/favicon.ico",
-      "contentLanguage": ["en"]
     }
   ]
 }
