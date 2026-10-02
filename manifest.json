@@ -15,20 +15,6 @@
       "formats": ["mp4", "m3u8"],
       "logo": "https://i.postimg.cc/0Qp8PSx5/vidfast.png",
       "contentLanguage": ["en"]
-    },
-    {
-      "id": "playimdb",
-      "name": "PlayIMDb",
-      "description": "High-Speed Direct Streaming for Movies (IMDb ID Extract)",
-      "version": "2.0.0",
-      "author": "PirateZoro9",
-      "supportedTypes": ["movie", "tv"],
-      "filename": "providers/playimdb.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": ["mp4", "mkv", "m3u8"],
-      "logo": "https://i.postimg.cc/KzjPtYWY/imdb.png",
-      "contentLanguage": ["en", "hi"]
     }
   ]
 }
