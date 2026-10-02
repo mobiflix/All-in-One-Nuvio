@@ -3,7 +3,7 @@ const BASE_URL = "https://vidfast.vc";
 const ENC_API = "https://enc-dec.app/api/enc-vidfast";
 const DEC_API = "https://enc-dec.app/api/dec-vidfast";
 const BLOCKED_SERVERS = new Set(["Horizon"]);
-const ALLOWED_QUALITIES = new Set(["4K", "2160p", "1440p", "1080p", "720p", "Adaptive", "Auto"]);
+const ALLOWED_QUALITIES = new Set(["1080p", "720p"]);
 
 const DEFAULT_HEADERS = {
     "Accept": "*/*",
