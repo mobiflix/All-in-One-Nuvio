@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "scrapers": [
     {
-      "id": "vidfast",
-      "name": "VidFast",
+      "id": "mobiflix",
+      "name": "mobiflix",
       "description": "Stream movies and TV shows from vidfast.pro.",
       "version": "1.0.0",
-      "author": "Dustincos",
+      "author": "mobiflix",
       "supportedTypes": ["movie", "tv"],
-      "filename": "providers/vidfast.js",
+      "filename": "providers/mobiflix.js",
       "enabled": true,
       "hasSettings": true,
       "formats": ["mp4", "m3u8"],
