@@ -5,7 +5,7 @@
     {
       "id": "mobiflix",
       "name": "mobiflix",
-      "description": "Stream movies and TV shows from vidfast.pro.",
+      "description": "Stream Movies and TV Shows",
       "version": "1.0.0",
       "author": "mobiflix",
       "supportedTypes": ["movie", "tv"],
