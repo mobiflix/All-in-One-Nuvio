@@ -424,6 +424,7 @@ function isAllowedLanguage(lang) {
   return words.some((w) => ALLOWED_LANGUAGES.includes(w));
 }
 
+// Returns: "English", "Tagalog", or "Original"
 function normalizeLanguageLabel(lang) {
   if (!lang) return null;
   const normalized = String(lang).toLowerCase().trim();
@@ -446,6 +447,16 @@ function normalizeLanguageLabel(lang) {
   }
 
   return null;
+}
+
+// ✅ CLEAR TAG — ipapakita sa title ng stream
+// Returns a bracket tag like: [ENGLISH], [TAGALOG], [ENGLISH/ORIGINAL]
+function getLanguageTag(lang) {
+  const label = normalizeLanguageLabel(lang);
+  if (label === "Tagalog") return "[TAGALOG]";
+  if (label === "English") return "[ENGLISH]";
+  if (label === "Original") return "[ENGLISH - ORIGINAL]";
+  return "[ENGLISH]"; // default
 }
 
 // ============================================================
@@ -622,6 +633,10 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
         const playUrl = `${API_BASE}/wefeed-mobile-bff/subject-api/play-info?${playParams.toString()}`;
         const playRes = yield movieBoxRequest("GET", playUrl, null, playbackHeaders);
         let hasValidStream = false;
+
+        // ✅ Language tag para malinaw kung English o Tagalog
+        const LANG_TAG = getLanguageTag(item.lang);
+
         if (playRes && playRes.data && playRes.data.data) {
           const playData = playRes.data.data;
           const streamsList = collectStreams(playData);
@@ -646,14 +661,17 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
               const streamId = stream.id || `${item.id}|${season}|${episode}`;
               const subtitles = yield fetchSubtitles(item.id, streamId, item.lang);
               const signHeaderKey = stream.signHeaderKey || stream.sign_header_key || "Cookie";
+
+              // ✅ Title format: [ENGLISH] or [TAGALOG] nasa unahan
               allStreams.push({
-                name: "MovieBox",
-                title: `${mediaTitle}${season > 0 ? ` S${season}E${episode}` : ""} - ${quality} (${audioLabel}) [${formatType}]`,
+                name: `MovieBox ${LANG_TAG}`,
+                title: `${LANG_TAG} ${mediaTitle}${season > 0 ? ` S${season}E${episode}` : ""} - ${quality} (${audioLabel}) [${formatType}]`,
                 url: finalStreamUrl,
                 quality,
                 headers: __spreadValues(__spreadValues({}, playbackHeaders), signCookie ? { [signHeaderKey]: signCookie } : {}),
                 subtitles,
-                provider: "moviebox"
+                provider: "moviebox",
+                language: LANG_TAG.replace(/[\[\]]/g, "").toLowerCase() // "english" o "tagalog"
               });
               hasValidStream = true;
             }
@@ -676,12 +694,13 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
                     const quality = video.resolution ? `${video.resolution}p` : "Auto";
                     const audioLabel = getAudioLabel({}, item.lang);
                     allStreams.push({
-                      name: "MovieBox",
-                      title: `${mediaTitle}${season > 0 ? ` S${season}E${episode}` : ""} - ${quality} (${audioLabel}) [Fallback]`,
+                      name: `MovieBox ${LANG_TAG}`,
+                      title: `${LANG_TAG} ${mediaTitle}${season > 0 ? ` S${season}E${episode}` : ""} - ${quality} (${audioLabel}) [Fallback]`,
                       url: video.resourceLink,
                       quality,
                       headers: __spreadValues({}, playbackHeaders),
-                      provider: "moviebox"
+                      provider: "moviebox",
+                      language: LANG_TAG.replace(/[\[\]]/g, "").toLowerCase()
                     });
                   }
                 }
@@ -693,6 +712,7 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
         console.error(`[MovieBox Stream Fetch Error] ID: ${item.id}`, err.message);
       }
     }
+
     const qualityRank = {
       "2160p": 2160, "4k": 2160, "1440p": 1440, "1080p": 1080,
       "720p": 720, "480p": 480, "360p": 360, "240p": 240, "auto": 1
@@ -718,7 +738,7 @@ function fetchSubtitles(subjectId, streamId, langLabel) {
       subtitles.push({
         url: cap.url,
         language: label.toLowerCase() === "tagalog" ? "tl" : "en",
-        name: `${label} (${langLabel})`,
+        name: `${label === "Tagalog" ? "[TAGALOG SUB]" : "[ENGLISH SUB]"} ${label} (${langLabel})`,
         headers: { "Referer": API_BASE }
       });
     };
