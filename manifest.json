@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "scrapers": [
     {
-      "id": "mobiflix",
-      "name": "mobiflix",
+      "id": "Moviebox",
+      "name": "Moviebox",
       "description": "Stream Movies and TV Shows",
       "version": "1.0.0",
-      "author": "mobiflix",
+      "author": "Moviebox",
       "supportedTypes": ["movie", "tv"],
-      "filename": "providers/mobiflix.js",
+      "filename": "providers/moviebox.js",
       "enabled": true,
       "hasSettings": true,
       "formats": ["mp4", "m3u8"],
