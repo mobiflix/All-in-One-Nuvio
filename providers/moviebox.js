@@ -1,6 +1,7 @@
 /**
  * moviebox - Single file bundle (English + Tagalog only)
  * Generated: 2026-10-04
+ * Fixed: Language tag nasa `name` field para lumabas sa player
  */
 
 var __create = Object.create;
@@ -415,7 +416,7 @@ function extractPolicyResource(signCookie) {
   return null;
 }
 
-// ---------- LANGUAGE HELPERS (English + Tagalog only) ----------
+// ---------- LANGUAGE HELPERS ----------
 function isAllowedLanguage(lang) {
   if (!lang) return false;
   const normalized = String(lang).toLowerCase().trim();
@@ -424,7 +425,6 @@ function isAllowedLanguage(lang) {
   return words.some((w) => ALLOWED_LANGUAGES.includes(w));
 }
 
-// Returns: "English", "Tagalog", or "Original"
 function normalizeLanguageLabel(lang) {
   if (!lang) return null;
   const normalized = String(lang).toLowerCase().trim();
@@ -432,13 +432,19 @@ function normalizeLanguageLabel(lang) {
   if (
     normalized.includes("tagalog") ||
     normalized.includes("filipino") ||
+    normalized.includes("pilipino") ||
     normalized === "tl" ||
-    normalized === "fil"
+    normalized === "fil" ||
+    normalized === "phi"
   ) {
     return "Tagalog";
   }
 
-  if (normalized.includes("english") || normalized === "en") {
+  if (
+    normalized.includes("english") ||
+    normalized === "en" ||
+    normalized === "eng"
+  ) {
     return "English";
   }
 
@@ -449,14 +455,13 @@ function normalizeLanguageLabel(lang) {
   return null;
 }
 
-// ✅ CLEAR TAG — ipapakita sa title ng stream
-// Returns a bracket tag like: [ENGLISH], [TAGALOG], [ENGLISH/ORIGINAL]
+// ✅ Returns "[ENGLISH]" / "[TAGALOG]" / "[ENGLISH]" (fallback)
 function getLanguageTag(lang) {
   const label = normalizeLanguageLabel(lang);
   if (label === "Tagalog") return "[TAGALOG]";
   if (label === "English") return "[ENGLISH]";
-  if (label === "Original") return "[ENGLISH - ORIGINAL]";
-  return "[ENGLISH]"; // default
+  if (label === "Original") return "[ENGLISH]"; // Original → treat as English
+  return "[ENGLISH]";
 }
 
 // ============================================================
@@ -600,12 +605,13 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
     const playbackPage = getPlaybackPage(subjectData, subjectId);
     const subjectIds = [];
     let originalLang = "English";
+
     const dubs = subjectData.dubs;
     if (Array.isArray(dubs)) {
       dubs.forEach((dub) => {
         if (dub.subjectId == subjectId) {
           const norm = normalizeLanguageLabel(dub.lanName);
-          originalLang = norm || "English";
+          originalLang = norm || dub.lanName || "English";
         } else {
           if (isAllowedLanguage(dub.lanName)) {
             const norm = normalizeLanguageLabel(dub.lanName);
@@ -615,6 +621,7 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
       });
     }
     subjectIds.unshift({ id: subjectId, lang: originalLang });
+
     const allStreams = [];
     const playbackHeaders = {
       "Origin": playbackPage.webBase,
@@ -624,8 +631,13 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
       "x-vip-restrict": "0",
       "x-no-high-risk-restrict": "0"
     };
+
     for (const item of subjectIds) {
       try {
+        // ✅ LANGUAGE TAG — nasa NAME field ito para siguradong lumabas
+        const LANG_TAG = getLanguageTag(item.lang);
+        const LANG_CLEAN = LANG_TAG.replace(/[\[\]]/g, "");
+
         const playParams = new URLSearchParams({ subjectId: item.id, se: season, ep: episode, streamSignType: "1" });
         if (playbackPage.detailPath) playParams.set("detailPath", playbackPage.detailPath);
         playParams.set("supportCodecs[hevc]", "1");
@@ -633,9 +645,6 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
         const playUrl = `${API_BASE}/wefeed-mobile-bff/subject-api/play-info?${playParams.toString()}`;
         const playRes = yield movieBoxRequest("GET", playUrl, null, playbackHeaders);
         let hasValidStream = false;
-
-        // ✅ Language tag para malinaw kung English o Tagalog
-        const LANG_TAG = getLanguageTag(item.lang);
 
         if (playRes && playRes.data && playRes.data.data) {
           const playData = playRes.data.data;
@@ -662,25 +671,24 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
               const subtitles = yield fetchSubtitles(item.id, streamId, item.lang);
               const signHeaderKey = stream.signHeaderKey || stream.sign_header_key || "Cookie";
 
-              // ✅ Title format: [ENGLISH] or [TAGALOG] nasa unahan
               allStreams.push({
-                name: `MovieBox ${LANG_TAG}`,
-                title: `${LANG_TAG} ${mediaTitle}${season > 0 ? ` S${season}E${episode}` : ""} - ${quality} (${audioLabel}) [${formatType}]`,
+                // ✅✅✅ ITO ANG FIX — TAG nasa NAME
+                name: `${LANG_TAG} MovieBox`,
+                title: `${mediaTitle}${season > 0 ? ` S${season}E${episode}` : ""} - ${quality} (${audioLabel}) [${formatType}]`,
                 url: finalStreamUrl,
                 quality,
                 headers: __spreadValues(__spreadValues({}, playbackHeaders), signCookie ? { [signHeaderKey]: signCookie } : {}),
                 subtitles,
                 provider: "moviebox",
-                language: LANG_TAG.replace(/[\[\]]/g, "").toLowerCase() // "english" o "tagalog"
+                language: LANG_CLEAN.toLowerCase()
               });
               hasValidStream = true;
             }
           }
+
           if (!hasValidStream) {
             let detectors = playData.resourceDetectors;
-            if (!Array.isArray(detectors)) {
-              detectors = subjectData.resourceDetectors;
-            }
+            if (!Array.isArray(detectors)) detectors = subjectData.resourceDetectors;
             if (Array.isArray(detectors)) {
               for (const detector of detectors) {
                 if (Array.isArray(detector.resolutionList)) {
@@ -688,19 +696,18 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
                     if (!video.resourceLink) continue;
                     const se = video.se != null ? video.se : 0;
                     const ep = video.ep != null ? video.ep : 0;
-                    if ((season > 0 || episode > 0) && (se !== season || ep !== episode)) {
-                      continue;
-                    }
+                    if ((season > 0 || episode > 0) && (se !== season || ep !== episode)) continue;
                     const quality = video.resolution ? `${video.resolution}p` : "Auto";
                     const audioLabel = getAudioLabel({}, item.lang);
                     allStreams.push({
-                      name: `MovieBox ${LANG_TAG}`,
-                      title: `${LANG_TAG} ${mediaTitle}${season > 0 ? ` S${season}E${episode}` : ""} - ${quality} (${audioLabel}) [Fallback]`,
+                      // ✅ FIX din dito
+                      name: `${LANG_TAG} MovieBox`,
+                      title: `${mediaTitle}${season > 0 ? ` S${season}E${episode}` : ""} - ${quality} (${audioLabel}) [Fallback]`,
                       url: video.resourceLink,
                       quality,
                       headers: __spreadValues({}, playbackHeaders),
                       provider: "moviebox",
-                      language: LANG_TAG.replace(/[\[\]]/g, "").toLowerCase()
+                      language: LANG_CLEAN.toLowerCase()
                     });
                   }
                 }
@@ -722,6 +729,13 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
       const qb = qualityRank[b.quality?.toLowerCase()] || 0;
       return qb - qa;
     });
+
+    // ✅ DEBUG LOG — para makita mo sa console kung ano ang nangyari
+    console.log(`[MovieBox] Returning ${allStreams.length} streams:`);
+    allStreams.forEach((s, i) => {
+      console.log(`  [${i + 1}] name="${s.name}" | quality="${s.quality}" | lang="${s.language}"`);
+    });
+
     return allStreams;
   });
 }
