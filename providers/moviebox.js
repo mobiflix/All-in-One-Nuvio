@@ -1,7 +1,8 @@
 /**
- * moviebox - Built from src/moviebox/
- * Generated: 2026-09-29T14:51:11.980Z
+ * moviebox - Single file bundle (English + Tagalog only)
+ * Generated: 2026-10-04
  */
+
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __defProps = Object.defineProperties;
@@ -34,10 +35,6 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -62,7 +59,9 @@ var __async = (__this, __arguments, generator) => {
   });
 };
 
-// src/moviebox/constants.js
+// ============================================================
+// CONSTANTS
+// ============================================================
 var API_BASE = "https://api3.aoneroom.com";
 var PLAYER_BASE = "https://moviebox.ph";
 var PLAYER_USER_AGENT = "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36";
@@ -91,7 +90,12 @@ var PACKAGE_INFO = {
   version_code: 50020130
 };
 
-// src/moviebox/utils.js
+// Only English + Tagalog allowed
+var ALLOWED_LANGUAGES = ["en", "tl", "fil", "tagalog", "english", "original", "filipino"];
+
+// ============================================================
+// UTILS
+// ============================================================
 var import_crypto_js = __toESM(require("crypto-js"));
 var SECRET_KEY_DEFAULT = import_crypto_js.default.enc.Base64.parse(
   import_crypto_js.default.enc.Base64.parse(KEY_B64_DEFAULT).toString(import_crypto_js.default.enc.Utf8)
@@ -99,15 +103,16 @@ var SECRET_KEY_DEFAULT = import_crypto_js.default.enc.Base64.parse(
 var SECRET_KEY_ALT = import_crypto_js.default.enc.Base64.parse(
   import_crypto_js.default.enc.Base64.parse(KEY_B64_ALT).toString(import_crypto_js.default.enc.Utf8)
 );
+
 var deviceId = "";
 var selectedBrand = "";
 var selectedModel = "";
 var bearerToken = null;
+
 function decodeJwtExpiry(token) {
   try {
     const parts = token.split(".");
-    if (parts.length < 2)
-      return 0;
+    if (parts.length < 2) return 0;
     let base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
     while (base64.length % 4) {
       base64 += "=";
@@ -119,16 +124,16 @@ function decodeJwtExpiry(token) {
     return 0;
   }
 }
+
 function isTokenValid(token) {
-  if (!token)
-    return false;
+  if (!token) return false;
   const exp = decodeJwtExpiry(token);
   return exp > Date.now() / 1e3 + 3600;
 }
+
 function getCachedToken() {
   return __async(this, null, function* () {
-    if (isTokenValid(bearerToken))
-      return bearerToken;
+    if (isTokenValid(bearerToken)) return bearerToken;
     console.log("[MovieBox] Fetching fresh anonymous token...");
     const url = TOKEN_URL;
     const res = yield movieBoxRequest("GET", url, null, {}, true);
@@ -150,6 +155,7 @@ function getCachedToken() {
     return bearerToken || "";
   });
 }
+
 function initializeSession() {
   if (!deviceId) {
     let chars = "0123456789abcdef";
@@ -162,18 +168,22 @@ function initializeSession() {
     selectedModel = models[Math.floor(Math.random() * models.length)];
   }
 }
+
 function md5(input) {
   return import_crypto_js.default.MD5(input).toString(import_crypto_js.default.enc.Hex);
 }
+
 function hmacMd5(key, data) {
   return import_crypto_js.default.HmacMD5(data, key).toString(import_crypto_js.default.enc.Base64);
 }
+
 function generateXClientToken(timestamp) {
   const ts = (timestamp || Date.now()).toString();
   const reversed = ts.split("").reverse().join("");
   const hash = md5(reversed);
   return `${ts},${hash}`;
 }
+
 function buildCanonicalString(method, accept, contentType, url, body, timestamp) {
   let path = "";
   let query = "";
@@ -214,6 +224,7 @@ ${timestamp}
 ${bodyHash}
 ` + canonicalUrl;
 }
+
 function generateXTrSignature(method, accept, contentType, url, body, useAltKey = false, customTimestamp = null) {
   const timestamp = customTimestamp || Date.now();
   const canonical = buildCanonicalString(method, accept, contentType, url, body, timestamp);
@@ -221,6 +232,7 @@ function generateXTrSignature(method, accept, contentType, url, body, useAltKey 
   const signatureB64 = hmacMd5(secret, canonical);
   return `${timestamp}|2|${signatureB64}`;
 }
+
 function movieBoxRequest(_0, _1) {
   return __async(this, arguments, function* (method, url, body = null, customHeaders = {}, isTokenFetch = false) {
     initializeSession();
@@ -258,10 +270,7 @@ function movieBoxRequest(_0, _1) {
         headers["Authorization"] = `Bearer ${token}`;
       }
     }
-    const options = {
-      method,
-      headers
-    };
+    const options = { method, headers };
     if (body) {
       options.body = body;
     }
@@ -301,8 +310,7 @@ function movieBoxRequest(_0, _1) {
               if (token && isTokenValid(token)) {
                 bearerToken = token;
               }
-            } catch (e) {
-            }
+            } catch (e) {}
           }
         }
         return {
@@ -319,6 +327,7 @@ function movieBoxRequest(_0, _1) {
     return null;
   });
 }
+
 function fetchTmdbDetails(tmdbId, mediaType) {
   return __async(this, null, function* () {
     var _a;
@@ -344,43 +353,38 @@ function fetchTmdbDetails(tmdbId, mediaType) {
     }
   });
 }
+
 function normalizeTitle(s) {
-  if (!s)
-    return "";
+  if (!s) return "";
   return String(s).replace(/\[[^\]]*\]/g, " ").replace(/\([^)]*\)/g, " ").replace(/\b(dub|dubbed|hd|4k|hindi|tamil|telugu|dual audio)\b/gi, " ").trim().toLowerCase().replace(/:/g, " ").replace(/[^\w\s]/g, " ").replace(/\s+/g, " ");
 }
+
 function parseQualityNumber(value) {
   const match = String(value || "").match(/(\d{3,4})/);
   return match ? parseInt(match[1], 10) : 0;
 }
+
 function getFormatType(url) {
   const u = String(url || "").toLowerCase();
-  if (u.includes(".mpd"))
-    return "DASH";
-  if (u.includes(".m3u8"))
-    return "HLS";
-  if (u.includes(".mp4"))
-    return "MP4";
-  if (u.includes(".mkv"))
-    return "MKV";
+  if (u.includes(".mpd")) return "DASH";
+  if (u.includes(".m3u8")) return "HLS";
+  if (u.includes(".mp4")) return "MP4";
+  if (u.includes(".mkv")) return "MKV";
   return "VIDEO";
 }
+
 function extractPolicyResource(signCookie) {
   var _a, _b;
-  if (!signCookie || typeof signCookie !== "string")
-    return null;
+  if (!signCookie || typeof signCookie !== "string") return null;
   const edgeMatch = signCookie.match(/Edge-Cache-Cookie=urlprefix=([^:;\s]+)/);
   if (edgeMatch) {
     try {
       let std = edgeMatch[1].replace(/_/g, "/").replace(/-/g, "+");
       const rem = (4 - std.length % 4) % 4;
-      if (rem > 0)
-        std += "=".repeat(rem);
+      if (rem > 0) std += "=".repeat(rem);
       const decoded = import_crypto_js.default.enc.Base64.parse(std).toString(import_crypto_js.default.enc.Utf8).replace(/\/+$/, "");
-      if (decoded)
-        return `${decoded}/index.mpd`;
-    } catch (_) {
-    }
+      if (decoded) return `${decoded}/index.mpd`;
+    } catch (_) {}
   }
   const cfMatch = signCookie.match(/CloudFront-Policy=([^;]+)/);
   if (cfMatch) {
@@ -388,16 +392,14 @@ function extractPolicyResource(signCookie) {
       const policyRaw = cfMatch[1];
       let cfB64 = policyRaw.replace(/-/g, "+").replace(/~/g, "/").replace(/_/g, "=");
       const rem = cfB64.length % 4;
-      if (rem > 0)
-        cfB64 += "=".repeat(rem);
+      if (rem > 0) cfB64 += "=".repeat(rem);
       let decodedJson = null;
       try {
         decodedJson = import_crypto_js.default.enc.Base64.parse(cfB64).toString(import_crypto_js.default.enc.Utf8);
       } catch (_) {
         let stdB64 = policyRaw.replace(/-/g, "+").replace(/_/g, "/");
         const rem2 = stdB64.length % 4;
-        if (rem2 > 0)
-          stdB64 += "=".repeat(rem2);
+        if (rem2 > 0) stdB64 += "=".repeat(rem2);
         decodedJson = import_crypto_js.default.enc.Base64.parse(stdB64).toString(import_crypto_js.default.enc.Utf8);
       }
       if (decodedJson) {
@@ -408,19 +410,52 @@ function extractPolicyResource(signCookie) {
           return trimmed.toLowerCase().endsWith(".mpd") ? trimmed : `${trimmed}/index.mpd`;
         }
       }
-    } catch (_) {
-    }
+    } catch (_) {}
   }
   return null;
 }
 
-// src/moviebox/index.js
+// ---------- LANGUAGE HELPERS (English + Tagalog only) ----------
+function isAllowedLanguage(lang) {
+  if (!lang) return false;
+  const normalized = String(lang).toLowerCase().trim();
+  if (ALLOWED_LANGUAGES.includes(normalized)) return true;
+  const words = normalized.split(/[\s_\-]+/);
+  return words.some((w) => ALLOWED_LANGUAGES.includes(w));
+}
+
+function normalizeLanguageLabel(lang) {
+  if (!lang) return null;
+  const normalized = String(lang).toLowerCase().trim();
+
+  if (
+    normalized.includes("tagalog") ||
+    normalized.includes("filipino") ||
+    normalized === "tl" ||
+    normalized === "fil"
+  ) {
+    return "Tagalog";
+  }
+
+  if (normalized.includes("english") || normalized === "en") {
+    return "English";
+  }
+
+  if (normalized.includes("original")) {
+    return "Original";
+  }
+
+  return null;
+}
+
+// ============================================================
+// MAIN
+// ============================================================
 function getStreams(tmdbId, mediaType, seasonNum = 1, episodeNum = 1) {
   return __async(this, null, function* () {
     console.log(`[MovieBox] Querying streams for TMDB: ${tmdbId}, Type: ${mediaType}`);
     const details = yield fetchTmdbDetails(tmdbId, mediaType);
-    if (!details)
-      return [];
+    if (!details) return [];
     let subjects = yield searchMovieBox(details.title);
     let bestMatch = findBestMatch(subjects, details.title, details.year, mediaType);
     if (!bestMatch && details.originalTitle && details.originalTitle !== details.title) {
@@ -436,6 +471,7 @@ function getStreams(tmdbId, mediaType, seasonNum = 1, episodeNum = 1) {
     return [];
   });
 }
+
 function searchMovieBox(query) {
   return __async(this, null, function* () {
     const url = `${API_BASE}/wefeed-mobile-bff/subject-api/search/v2`;
@@ -453,52 +489,44 @@ function searchMovieBox(query) {
     return [];
   });
 }
+
 function findBestMatch(subjects, tmdbTitle, tmdbYear, mediaType) {
   const normTmdbTitle = normalizeTitle(tmdbTitle);
   const targetType = mediaType === "movie" ? 1 : 2;
   let bestMatch = null;
   let bestScore = 0;
   for (const subject of subjects) {
-    if (subject.subjectType !== targetType)
-      continue;
+    if (subject.subjectType !== targetType) continue;
     const title = subject.title;
     const normTitle = normalizeTitle(title);
     const year = subject.year || (subject.releaseDate ? subject.releaseDate.substring(0, 4) : null);
     let score = 0;
-    if (normTitle === normTmdbTitle)
-      score += 50;
-    else if (normTitle.includes(normTmdbTitle) || normTmdbTitle.includes(normTitle))
-      score += 15;
-    if (tmdbYear && year && tmdbYear == year)
-      score += 35;
+    if (normTitle === normTmdbTitle) score += 50;
+    else if (normTitle.includes(normTmdbTitle) || normTmdbTitle.includes(normTitle)) score += 15;
+    if (tmdbYear && year && tmdbYear == year) score += 35;
     if (score > bestScore) {
       bestScore = score;
       bestMatch = subject;
     }
   }
-  if (bestScore >= 40)
-    return bestMatch;
+  if (bestScore >= 40) return bestMatch;
   return null;
 }
+
 function getPlaybackPage(subjectData, subjectId) {
   const candidates = [subjectData.detailPath, subjectData.detail_path, subjectData.path, subjectData.slug];
   let detailPath = candidates.find((value) => typeof value === "string" && value.trim());
   let webBase = PLAYER_BASE;
   for (const value of [subjectData.detailDomain, subjectData.webDomain, subjectData.webUrl, subjectData.detailUrl, subjectData.shareUrl]) {
-    if (typeof value !== "string")
-      continue;
+    if (typeof value !== "string") continue;
     try {
       const parsed = new URL(value.startsWith("http") ? value : `https://${value}`);
-      if (!parsed.hostname.endsWith("aoneroom.com"))
-        webBase = parsed.origin;
-      if (!detailPath && parsed.pathname && parsed.pathname !== "/")
-        detailPath = parsed.pathname;
+      if (!parsed.hostname.endsWith("aoneroom.com")) webBase = parsed.origin;
+      if (!detailPath && parsed.pathname && parsed.pathname !== "/") detailPath = parsed.pathname;
       break;
-    } catch (e) {
-    }
+    } catch (e) {}
   }
-  if (!detailPath)
-    return { webBase, referer: `${webBase}/` };
+  if (!detailPath) return { webBase, referer: `${webBase}/` };
   detailPath = detailPath.replace(/^\/+/, "").replace(/^movies\//, "");
   const pageUrl = new URL(`/movies/${detailPath}`, `${webBase}/`);
   pageUrl.searchParams.set("id", subjectId);
@@ -508,6 +536,7 @@ function getPlaybackPage(subjectData, subjectId) {
   pageUrl.searchParams.set("lang", "en");
   return { webBase, detailPath, referer: pageUrl.toString() };
 }
+
 function collectStreams(playData) {
   var _a, _b;
   const streams = Array.isArray(playData == null ? void 0 : playData.streams) ? [...playData.streams] : [];
@@ -515,8 +544,7 @@ function collectStreams(playData) {
     const value = (_b = playData == null ? void 0 : playData[key]) != null ? _b : (_a = playData == null ? void 0 : playData.data) == null ? void 0 : _a[key];
     const values = Array.isArray(value) ? value : value ? [value] : [];
     for (const item of values) {
-      if (typeof item === "string")
-        streams.push({ url: item, format });
+      if (typeof item === "string") streams.push({ url: item, format });
       else if (item && typeof item === "object") {
         if (item.url || item.playUrl || item.resourceLink || item.streamUrl)
           streams.push(__spreadProps(__spreadValues({}, item), { format: item.format || format }));
@@ -530,70 +558,48 @@ function collectStreams(playData) {
       }
     }
   }
-  const seen = /* @__PURE__ */ new Set();
+  const seen = new Set();
   return streams.filter((stream) => {
     const key = (stream == null ? void 0 : stream.url) || (stream == null ? void 0 : stream.playUrl) || (stream == null ? void 0 : stream.resourceLink) || (stream == null ? void 0 : stream.streamUrl);
-    if (!key || seen.has(key))
-      return false;
+    if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 }
+
 function getAudioLabel(stream, fallbackLanguage) {
-  var _a, _b;
-  const rawLanguage = [stream.languageName, stream.lanName, stream.language, stream.lan, fallbackLanguage].find((value) => typeof value === "string" && value.trim()) || "Unknown";
-  let language = rawLanguage.replace(/\bdub\b/gi, " ").replace(/\baudio\b/gi, " ").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
-  const languageNames = {
-    ar: "Arabic",
-    bn: "Bengali",
-    de: "German",
-    en: "English",
-    es: "Spanish",
-    fr: "French",
-    hi: "Hindi",
-    id: "Indonesian",
-    it: "Italian",
-    ja: "Japanese",
-    ko: "Korean",
-    ml: "Malayalam",
-    mr: "Marathi",
-    pt: "Portuguese",
-    ru: "Russian",
-    ta: "Tamil",
-    te: "Telugu",
-    th: "Thai",
-    tr: "Turkish",
-    ur: "Urdu",
-    vi: "Vietnamese",
-    zh: "Chinese"
-  };
-  const languageCode = (_b = (_a = language.match(/^([a-z]{2,3})(?:\s|$)/i)) == null ? void 0 : _a[1]) == null ? void 0 : _b.toLowerCase();
-  if (languageCode && languageNames[languageCode]) {
-    language = languageNames[languageCode];
-  } else if (language) {
-    language = language.charAt(0).toUpperCase() + language.slice(1);
-  } else {
-    language = "Unknown";
-  }
-  return `${language} Audio`;
+  const rawLanguage = [
+    stream.languageName,
+    stream.lanName,
+    stream.language,
+    stream.lan,
+    fallbackLanguage
+  ].find((value) => typeof value === "string" && value.trim()) || "English";
+  const label = normalizeLanguageLabel(rawLanguage);
+  if (label) return `${label} Audio`;
+  return "English Audio";
 }
+
 function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", mediaType = "movie") {
   return __async(this, null, function* () {
     const subjectUrl = `${API_BASE}/wefeed-mobile-bff/subject-api/get?subjectId=${subjectId}`;
     const detailRes = yield movieBoxRequest("GET", subjectUrl);
-    if (!detailRes || !detailRes.data || !detailRes.data.data)
-      return [];
+    if (!detailRes || !detailRes.data || !detailRes.data.data) return [];
     const subjectData = detailRes.data.data;
     const playbackPage = getPlaybackPage(subjectData, subjectId);
     const subjectIds = [];
-    let originalLang = "Original";
+    let originalLang = "English";
     const dubs = subjectData.dubs;
     if (Array.isArray(dubs)) {
       dubs.forEach((dub) => {
         if (dub.subjectId == subjectId) {
-          originalLang = dub.lanName || "Original";
+          const norm = normalizeLanguageLabel(dub.lanName);
+          originalLang = norm || "English";
         } else {
-          subjectIds.push({ id: dub.subjectId, lang: dub.lanName });
+          if (isAllowedLanguage(dub.lanName)) {
+            const norm = normalizeLanguageLabel(dub.lanName);
+            if (norm) subjectIds.push({ id: dub.subjectId, lang: norm });
+          }
         }
       });
     }
@@ -610,8 +616,7 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
     for (const item of subjectIds) {
       try {
         const playParams = new URLSearchParams({ subjectId: item.id, se: season, ep: episode, streamSignType: "1" });
-        if (playbackPage.detailPath)
-          playParams.set("detailPath", playbackPage.detailPath);
+        if (playbackPage.detailPath) playParams.set("detailPath", playbackPage.detailPath);
         playParams.set("supportCodecs[hevc]", "1");
         playParams.set("supportCodecs[h264]", "1");
         const playUrl = `${API_BASE}/wefeed-mobile-bff/subject-api/play-info?${playParams.toString()}`;
@@ -626,12 +631,9 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
               const signCookie = stream.signCookie || null;
               const policyUrl = extractPolicyResource(signCookie);
               const finalStreamUrl = policyUrl || rawStreamUrl;
-              if (!finalStreamUrl)
-                continue;
-              if (finalStreamUrl.includes("b164fbfb4347792950bdfbfb563d39d9"))
-                continue;
-              if (finalStreamUrl === rawStreamUrl && rawStreamUrl.includes("/other/2026/09/"))
-                continue;
+              if (!finalStreamUrl) continue;
+              if (finalStreamUrl.includes("b164fbfb4347792950bdfbfb563d39d9")) continue;
+              if (finalStreamUrl === rawStreamUrl && rawStreamUrl.includes("/other/2026/09/")) continue;
               let formatType = getFormatType(finalStreamUrl);
               if (stream.format) {
                 const declaredFormat = String(stream.format).toUpperCase();
@@ -665,8 +667,7 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
               for (const detector of detectors) {
                 if (Array.isArray(detector.resolutionList)) {
                   for (const video of detector.resolutionList) {
-                    if (!video.resourceLink)
-                      continue;
+                    if (!video.resourceLink) continue;
                     const se = video.se != null ? video.se : 0;
                     const ep = video.ep != null ? video.ep : 0;
                     if ((season > 0 || episode > 0) && (se !== season || ep !== episode)) {
@@ -693,63 +694,50 @@ function getStreamLinks(subjectId, season = 0, episode = 0, mediaTitle = "", med
       }
     }
     const qualityRank = {
-      "2160p": 2160,
-      "4k": 2160,
-      "1440p": 1440,
-      "1080p": 1080,
-      "720p": 720,
-      "480p": 480,
-      "360p": 360,
-      "240p": 240,
-      "auto": 1
+      "2160p": 2160, "4k": 2160, "1440p": 1440, "1080p": 1080,
+      "720p": 720, "480p": 480, "360p": 360, "240p": 240, "auto": 1
     };
     allStreams.sort((a, b) => {
-      var _a, _b;
-      const qa = qualityRank[(_a = a.quality) == null ? void 0 : _a.toLowerCase()] || 0;
-      const qb = qualityRank[(_b = b.quality) == null ? void 0 : _b.toLowerCase()] || 0;
+      const qa = qualityRank[a.quality?.toLowerCase()] || 0;
+      const qb = qualityRank[b.quality?.toLowerCase()] || 0;
       return qb - qa;
     });
     return allStreams;
   });
 }
+
 function fetchSubtitles(subjectId, streamId, langLabel) {
   return __async(this, null, function* () {
     const subtitles = [];
+    const pushSub = (cap) => {
+      if (!cap || !cap.url) return;
+      const rawLang = cap.language || cap.lanName || cap.lan || "";
+      if (!isAllowedLanguage(rawLang)) return;
+      const label = normalizeLanguageLabel(rawLang);
+      if (!label) return;
+      subtitles.push({
+        url: cap.url,
+        language: label.toLowerCase() === "tagalog" ? "tl" : "en",
+        name: `${label} (${langLabel})`,
+        headers: { "Referer": API_BASE }
+      });
+    };
     try {
       const streamCapUrl = `${API_BASE}/wefeed-mobile-bff/subject-api/get-stream-captions?subjectId=${subjectId}&streamId=${streamId}`;
       const capRes = yield movieBoxRequest("GET", streamCapUrl, null);
       if (capRes && capRes.data && capRes.data.data && Array.isArray(capRes.data.data.extCaptions)) {
-        capRes.data.data.extCaptions.forEach((cap) => {
-          if (cap.url) {
-            subtitles.push({
-              url: cap.url,
-              language: cap.language || cap.lanName || cap.lan || "en",
-              name: `${cap.lanName || cap.language || "Subtitle"} (${langLabel})`,
-              headers: { "Referer": API_BASE }
-            });
-          }
-        });
+        capRes.data.data.extCaptions.forEach(pushSub);
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     try {
       const extCapUrl = `${API_BASE}/wefeed-mobile-bff/subject-api/get-ext-captions?subjectId=${subjectId}&resourceId=${streamId}&episode=0`;
       const extRes = yield movieBoxRequest("GET", extCapUrl, null);
       if (extRes && extRes.data && extRes.data.data && Array.isArray(extRes.data.data.extCaptions)) {
-        extRes.data.data.extCaptions.forEach((cap) => {
-          if (cap.url) {
-            subtitles.push({
-              url: cap.url,
-              language: cap.lan || cap.lanName || cap.language || "en",
-              name: `${cap.lanName || cap.lan || "Subtitle"} (${langLabel})`,
-              headers: { "Referer": API_BASE }
-            });
-          }
-        });
+        extRes.data.data.extCaptions.forEach(pushSub);
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     return subtitles;
   });
 }
+
 module.exports = { getStreams };
