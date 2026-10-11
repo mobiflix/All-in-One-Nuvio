@@ -1,7 +1,7 @@
-const PROVIDER = "VidFast";
-const BASE_URL = "https://vidfast.vc";
-const ENC_API = "https://enc-dec.app/api/enc-vidfast";
-const DEC_API = "https://enc-dec.app/api/dec-vidfast";
+const PROVIDER = "Vidy";
+const BASE_URL = "https://vidy.st";
+const ENC_API = "https://enc-dec.app/api/enc-vidy";
+const DEC_API = "https://enc-dec.app/api/dec-vidy";
 const BLOCKED_SERVERS = new Set(["Horizon"]);
 const ALLOWED_QUALITIES = new Set(["1080p", "720p"]);
 
