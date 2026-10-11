@@ -1,20 +1,20 @@
 {
-  "name": "All-in-One-Nuvio",
-  "version": "1.0.0",
-  "scrapers": [
-    {
-      "id": "Moviebox",
-      "name": "Moviebox",
-      "description": "Stream Movies and TV Shows",
-      "version": "1.0.0",
-      "author": "Moviebox",
-      "supportedTypes": ["movie", "tv"],
-      "filename": "providers/moviebox.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": ["mp4", "m3u8"],
-      "logo": "https://i.postimg.cc/0Qp8PSx5/vidfast.png",
-      "contentLanguage": ["en"]
-    }
-  ]
+    "name": "All-in-One-Nuvio",
+    "version": "1.0.0",
+    "scrapers": [
+        {
+            "id": "Vidy",
+            "name": "Vidy",
+            "description": "Stream Movies and TV Shows from Vidy (vidy.st)",
+            "version": "1.0.0",
+            "author": "Vidy",
+            "supportedTypes": ["movie", "tv"],
+            "filename": "providers/vidy.js",
+            "enabled": true,
+            "hasSettings": false,
+            "formats": ["mp4", "m3u8"],
+            "logo": "https://vidy.st/favicon.ico",
+            "contentLanguage": ["en"]
+        }
+    ]
 }
